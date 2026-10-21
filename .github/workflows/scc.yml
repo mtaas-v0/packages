@@ -1,21 +1,24 @@
 name: Code Metrics (SCC)
 
 on:
-  push:
-    branches: [ ]
-  pull_request:
-    branches: [ ]
   workflow_dispatch: # Allows you to trigger it manually
 
 jobs:
-  scc_metrics:
+  scc:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run SCC Code Counter
-        uses: kevincobain2000/action-scc@v1
-        with:
-          # Optional customization (e.g., limit to top 5 languages in chart)
-          limit: 5 
+
+      - name: Install scc via Homebrew
+        run: brew install scc
+        
+      - name: Generate and Append Job Summary
+        run: |
+          echo "## 📊 Code Statistics Report" >> $GITHUB_STEP_SUMMARY
+          echo "Generated using [scc](https://github.com)." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Run scc in markdown format and append directly to the GitHub summary file
+          scc --format markdown >> $GITHUB_STEP_SUMMARY
