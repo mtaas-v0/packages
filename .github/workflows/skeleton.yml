@@ -8,6 +8,10 @@ jobs:
   skeleton:
     runs-on: ubuntu-22.04
     steps:
+    
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Clean files and upload 1-day skeleton artifact
         run: |
           # 1. Define your suffixes (extensions) here
@@ -39,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skeleton-run-${{ github.run_number }}-${{ env.CURRENT_DATE || 'artifact' }}
-          path: skeleton-tree.txt
+          path: .
           retention-days: 1  # Sets the 1-day retention policy
