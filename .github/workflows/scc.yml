@@ -65,7 +65,7 @@ jobs:
               except FileNotFoundError:
                   continue
 
-          sorted_stats = sorted(stats.items(), key=lambda x: x["bytes"], reverse=True)
+          sorted_stats = sorted(stats.items(), key=lambda x: x[1]["bytes"], reverse=True)
 
           summary_lines = [
               "## 📦 File Extension & Size Metrics",
