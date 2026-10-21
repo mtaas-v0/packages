@@ -80,7 +80,7 @@ jobs:
 
           for ext, metrics in sorted_stats:
               readable_size = human_readable_size(metrics["bytes"])
-              summary_lines.append(f"| {ext} | {metrics["count"]} | {readable_size} |")
+              summary_lines.append(f\'| {ext} | {metrics["count"]} | {readable_size} |\')
 
           # Write directly to GitHub Summary
           summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
