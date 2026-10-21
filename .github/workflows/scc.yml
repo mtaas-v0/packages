@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@v1
         
       - name: Install scc via Homebrew
-        run: brew install scc
+        run: brew install scc jq
         
       - name: Checkout code
         uses: actions/checkout@v4
