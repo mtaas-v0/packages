@@ -33,58 +33,52 @@ jobs:
 
       - name: python type stat
         run: |
-          # 2. Process metrics via inline python script
-          python3 -c '
+          python3 -c """
           import os
           from pathlib import Path
 
           def human_readable_size(size_bytes):
-              if size_bytes == 0: return "0 B"
-              units = ["B", "KB", "MB", "GB"]
+              if size_bytes == 0: return '0 B'
+              units = ['B', 'KB', 'MB', 'GB']
               i = 0
               while size_bytes >= 1024 and i < len(units) - 1:
                   size_bytes /= 1024.0
                   i += 1
-              return f"{size_bytes:.2f} {units[i]}"
+              return f'{size_bytes:.2f} {units[i]}'
 
           stats = {}
           
-          # Scan everything in the current working directory recursively
-          for p in Path(".").rglob("*"):
-              # Skip directories and the internal .git folder
-              if p.is_dir() or ".git" in p.parts:
+          for p in Path('.').rglob('*'):
+              if p.is_dir() or '.git' in p.parts:
                   continue
                   
               try:
                   bytes_size = p.stat().st_size
-                  ext = p.suffix.lower() if p.suffix else "(no extension)"
+                  ext = p.suffix.lower() if p.suffix else '(no extension)'
                   
                   if ext not in stats:
-                      stats[ext] = {"count": 0, "bytes": 0}
+                      stats[ext] = {'count': 0, 'bytes': 0}
                   
-                  stats[ext]["count"] += 1
-                  stats[ext]["bytes"] += bytes_size
+                  stats[ext]['count'] += 1
+                  stats[ext]['bytes'] += bytes_size
               except FileNotFoundError:
-                  # Protects against broken symlinks
                   continue
 
-          # Sort by total byte size descending
-          sorted_stats = sorted(stats.items(), key=lambda x: x[1]["bytes"], reverse=True)
+          sorted_stats = sorted(stats.items(), key=lambda x: x['bytes'], reverse=True)
 
-          # Format Markdown
           summary_lines = [
-              "## 📦 File Extension & Size Metrics",
-              "| Extension | File Count | Total Size |",
-              "| :--- | :---: | :---: |"
+              '## 📦 File Extension & Size Metrics',
+              '| Extension | File Count | Total Size |',
+              '| :--- | :---: | :---: |'
           ]
 
           for ext, metrics in sorted_stats:
-              readable_size = human_readable_size(metrics["bytes"])
-              summary_lines.append(f\'| {ext} | {metrics["count"]} | {readable_size} |\')
+              readable_size = human_readable_size(metrics['bytes'])
+              # FIX: Use clean double quotes for f-string and simple single quotes for the dict key lookup
+              summary_lines.append(f\"| {ext} | {metrics['count']} | {readable_size} |\")
 
-          # Write directly to GitHub Summary
-          summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+          summary_file = os.environ.get('GITHUB_STEP_SUMMARY')
           if summary_file:
-              with open(summary_file, "a") as sf:
-                  sf.write("\n".join(summary_lines) + "\n")
-          '
+              with open(summary_file, 'a') as sf:
+                  sf.write('\n'.join(summary_lines) + '\n')
+          """
