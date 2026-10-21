@@ -1,0 +1,21 @@
+name: Code Metrics (SCC)
+
+on:
+  push:
+    branches: [ ]
+  pull_request:
+    branches: [ ]
+  workflow_dispatch: # Allows you to trigger it manually
+
+jobs:
+  scc_metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run SCC Code Counter
+        uses: kevincobain2000/action-scc@v1
+        with:
+          # Optional customization (e.g., limit to top 5 languages in chart)
+          limit: 5 
