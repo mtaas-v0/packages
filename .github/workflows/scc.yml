@@ -25,3 +25,37 @@ jobs:
           
           # Run scc in markdown format and append directly to the GitHub summary file
           scc --format markdown >> $GITHUB_STEP_SUMMARY
+
+      - name: Process File Extensions and Sizes
+        run: |
+          # 1. Title for the GitHub Summary UI
+          echo "## 📦 File Extension & Size Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "| Extension | File Count | Total Size |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :---: | :---: |" >> $GITHUB_STEP_SUMMARY
+
+          # 2. Extract, aggregate, format size to human-readable units, and append to Summary
+          scc --format json2 --by-file | jq -r '
+            [ .[] | .Files[] ] 
+
+            | group_by(.Location | split(".")[-1]) 
+            | .[] 
+            | {
+                ext: (.[0].Location | split(".")[-1]), 
+                count: length, 
+                bytes: (map(.Bytes) | add)
+              }
+            | select(.ext != "")
+            | sort_by(-.bytes)
+            | .[]
+            | [
+                ("." + .ext),
+                .count,
+                if .bytes >= 1073741824 then (((.bytes / 1073741824 * 100) | round / 100 | tostring) + " GB")
+                elif .bytes >= 1048576 then (((.bytes / 1048576 * 100) | round / 100 | tostring) + " MB")
+                elif .bytes >= 1024 then (((.bytes / 1024 * 100) | round / 100 | tostring) + " KB")
+                else (.bytes | tostring) + " B"
+                end
+              ]
+
+            | "| " + join(" | ") + " |"
+          ' >> $GITHUB_STEP_SUMMARY
