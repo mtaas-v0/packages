@@ -1,0 +1,43 @@
+
+name: skeleton archive
+
+on:
+  workflow_dispatch: # Allows you to trigger it manually
+
+jobs:
+  skeleton:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Clean files and upload 1-day skeleton artifact
+        run: |
+          # 1. Define your suffixes (extensions) here
+          SUFFIXES=(".png" ".wasm" ".svg" ".pdf" ".typ" ".gif" ".json" ".webp" ".ttf" ".pdb" ".jpeg")
+          
+          # 2. Build the find command arguments dynamically
+          FIND_ARGS=()
+          for i in "${!SUFFIXES[@]}"; do
+            if [ $i -gt 0 ]; then
+              FIND_ARGS+=("-o")
+            fi
+            FIND_ARGS+=("-name" "*${SUFFIXES[$i]}")
+          done
+          
+          # 3. Recursively find and remove matching files
+          echo "Removing matching files..."
+          find . -type f \( "${FIND_ARGS[@]}" \) -delete
+          
+          # 4. Create a clean structure snapshot (skeleton file)
+          # This creates a text file containing the remaining file/folder tree
+          echo "Creating repository skeleton..."
+          CURRENT_DATE=$(date +'%Y-%m-%d')
+          echo "Build Run: ${{ github.run_number }}" > skeleton-tree.txt
+          echo "Date: $CURRENT_DATE" >> skeleton-tree.txt
+          echo "-----------------------------------" >> skeleton-tree.txt
+          find . -not -path '*/.*' >> skeleton-tree.txt
+      
+      - name: Upload Skeleton Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skeleton-run-${{ github.run_number }}-${{ env.CURRENT_DATE || 'artifact' }}
+          path: skeleton-tree.txt
+          retention-days: 1  # Sets the 1-day retention policy
