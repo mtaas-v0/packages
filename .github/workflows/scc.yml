@@ -28,23 +28,22 @@ jobs:
 
       - name: Process File Extensions and Sizes
         run: |
-          # 1. Title for the GitHub Summary UI
+          # 1. Prepare GitHub Actions Summary Markdown Table Headers
           echo "## 📦 File Extension & Size Metrics" >> $GITHUB_STEP_SUMMARY
           echo "| Extension | File Count | Total Size |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :---: | :---: |" >> $GITHUB_STEP_SUMMARY
 
-          # 2. Extract, aggregate, format size to human-readable units, and append to Summary
-          scc --format json2 --by-file | jq -r '
-            [ .[] | .Files[] ] 
-
-            | group_by(.Location | split(".")[-1]) 
+          # 2. Parse flat JSON array directly, group by extension, and calculate size
+          scc --format json --by-file | jq -r '
+            group_by(.Location | split(".")[-1]) 
             | .[] 
             | {
                 ext: (.[0].Location | split(".")[-1]), 
                 count: length, 
                 bytes: (map(.Bytes) | add)
               }
-            | select(.ext != "")
+
+            | select(.ext != null and .ext != "" and (.ext | contains("/") | not))
             | sort_by(-.bytes)
             | .[]
             | [
@@ -56,6 +55,9 @@ jobs:
                 else (.bytes | tostring) + " B"
                 end
               ]
+
+            | "| " + join(" | ") + " |"
+          ' >> $GITHUB_STEP_SUMMARY
 
             | "| " + join(" | ") + " |"
           ' >> $GITHUB_STEP_SUMMARY
