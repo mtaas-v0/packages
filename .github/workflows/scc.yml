@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@v1
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
         
       - name: Install scc via Homebrew
         run: brew install scc jq
@@ -16,8 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
-        
       - name: Generate and Append Job Summary
         run: |
           echo "## 📊 Code Statistics Report" >> $GITHUB_STEP_SUMMARY
